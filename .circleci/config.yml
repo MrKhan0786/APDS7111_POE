@@ -3,26 +3,30 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:7.0  # Using .NET 7 SDK image
+      - image: mcr.microsoft.com/dotnet/sdk:7.0
     working_directory: ~/repo
     steps:
       - checkout
+
       - run:
           name: Restore dependencies
-          command: dotnet restore
+          command: dotnet restore src/APDS7111_POE.csproj
+
       - run:
           name: Build project
-          command: dotnet build --no-restore --configuration Release
+          command: dotnet build src/APDS7111_POE.csproj --no-restore --configuration Release
+
       - run:
           name: Run tests
-          command: dotnet test --no-build --verbosity normal
+          command: dotnet test tests/APDS7111_POE.Tests.csproj --no-build --verbosity normal
+
       - run:
           name: Run SonarQube analysis
           command: |
             dotnet tool install --global dotnet-sonarscanner
             export PATH="$PATH:/root/.dotnet/tools"
             dotnet sonarscanner begin /k:"APDS7111_POE" /d:sonar.login="$SONAR_TOKEN"
-            dotnet build
+            dotnet build src/APDS7111_POE.csproj
             dotnet sonarscanner end /d:sonar.login="$SONAR_TOKEN"
 
 workflows:
